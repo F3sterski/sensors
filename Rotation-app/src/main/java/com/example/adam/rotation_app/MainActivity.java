@@ -19,9 +19,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Sensor mag;
     float[] mGravs = new float[3];
     float[] mGeoMags = new float[3];
-    float[] mInclinationM = new float[16];
-    float[] mRotationM = new float[3];
-    float[] orientation = new float[3];
+    float[] mRotationM = new float[9];
+    float[] mRotationM2 = new float[9];
     EditText et1 = null;
     EditText et2 = null;
     EditText et3 = null;
@@ -29,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView tv1 = null;
     TextView tv2 = null;
     TextView tv3 = null;
+    TextView tv4 = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,11 +40,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et1 = (EditText) findViewById(R.id.editText2);
         et2 = (EditText) findViewById(R.id.editText3);
         et3 = (EditText) findViewById(R.id.editText4);
+
         b = (Button) findViewById(R.id.button);
         b.setOnClickListener(this);
         tv1 = (TextView) findViewById(R.id.textView);
         tv2 = (TextView) findViewById(R.id.textView2);
         tv3 = (TextView) findViewById(R.id.textView3);
+        tv4 = (TextView) findViewById(R.id.textView4);
 
     }
 
@@ -62,8 +64,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         mRotationM[0] = Float.valueOf(et1.getText().toString());
-        mRotationM[1] = Float.valueOf(et2.getText().toString());
-        mRotationM[2] = Float.valueOf(et3.getText().toString());
+        mRotationM[4] = Float.valueOf(et2.getText().toString());
+        mRotationM[8] = Float.valueOf(et3.getText().toString());
         System.out.println(Arrays.toString(mRotationM));
     }
 
@@ -76,23 +78,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case Sensor.TYPE_MAGNETIC_FIELD:
                 System.arraycopy(event.values, 0, mGeoMags, 0, 3);
                 break;
-            default:
-                return;
         }
-
-        // If mGravs and mGeoMags have values then find rotation matrix
         if (mGravs != null && mGeoMags != null) {
-
-            // checks that the rotation matrix is found
             if(SensorManager.getRotationMatrix(mRotationM, null, mGravs, mGeoMags)){
-                SensorManager.getOrientation(mRotationM, orientation);
-                tv1.setText(String.valueOf(Math.toDegrees(orientation[0])));
-                tv1.setText(String.valueOf(Math.toDegrees(orientation[1])));
-                tv3.setText(String.valueOf(Math.toDegrees(orientation[2])));
+               // System.out.println(Arrays.toString(mRotationM));
+                mRotationM2 = Arrays.copyOf(mRotationM,9);
+                tv1.setText(String.valueOf(mRotationM2[0]));
+                tv2.setText(String.valueOf(mRotationM2[4]));
+                tv3.setText(String.valueOf(mRotationM2[8]));
+
+                if(mRotationM2[0] > 0.5 ) tv4.setText("N");
+                else if(mRotationM2[0] < 0.5 && mRotationM2[3] > 0.5 ) tv4.setText("W");
+                else if(mRotationM2[0] < 0.5 && mRotationM2[3] < -0.5 ) tv4.setText("E");
+                else tv4.setText("S");
             }
+            Arrays.fill(mRotationM,0);
         }
     }
-
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
